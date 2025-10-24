@@ -9,6 +9,9 @@
     },
     {
       "path": "./projects/splitrix-algorand-frontend"
+    },
+    {
+      "path": "./projects/splitrix-algorand-backend"
     }
   ],
   "settings": {

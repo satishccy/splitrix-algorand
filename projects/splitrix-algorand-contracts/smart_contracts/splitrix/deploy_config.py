@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 # define deployment behaviour based on supplied app spec
 def deploy() -> None:
     from smart_contracts.artifacts.splitrix.splitrix_client import (
-        HelloArgs,
         SplitrixFactory,
     )
 
@@ -19,26 +18,14 @@ def deploy() -> None:
         SplitrixFactory, default_sender=deployer_.address
     )
 
-    app_client, result = factory.deploy(
-        on_update=algokit_utils.OnUpdate.AppendApp,
-        on_schema_break=algokit_utils.OnSchemaBreak.AppendApp,
-    )
+    app_client, result = factory.send.create.bare()
 
-    if result.operation_performed in [
-        algokit_utils.OperationPerformed.Create,
-        algokit_utils.OperationPerformed.Replace,
-    ]:
-        algorand.send.payment(
-            algokit_utils.PaymentParams(
-                amount=algokit_utils.AlgoAmount(algo=1),
-                sender=deployer_.address,
-                receiver=app_client.app_address,
-            )
+    algorand.send.payment(
+        algokit_utils.PaymentParams(
+            amount=algokit_utils.AlgoAmount(algo=100),
+            sender=deployer_.address,
+            receiver=app_client.app_address,
         )
-
-    name = "world"
-    response = app_client.send.hello(args=HelloArgs(name=name))
-    logger.info(
-        f"Called hello on {app_client.app_name} ({app_client.app_id}) "
-        f"with name={name}, received: {response.abi_return}"
     )
+
+    logger.info(f"Splitrix contract deployed to {app_client.app_address} [{app_client.app_id}]")

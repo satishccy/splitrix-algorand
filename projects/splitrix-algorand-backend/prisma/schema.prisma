@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model SyncStatus {
+  id              Int      @id @default(1)
+  lastSyncedBlock BigInt   @db.UnsignedBigInt
+  lastSyncedAt    DateTime @updatedAt
+}
+
+model Group {
+  id          String   @id // group_id from contract (as string)
+  admin       String   // Algorand address
+  memberCount Int
+  createdAt   DateTime @default(now())
+  members     GroupMember[]
+  bills       Bill[]
+
+  @@index([admin])
+}
+
+model GroupMember {
+  id        Int    @id @default(autoincrement())
+  groupId   String
+  address   String
+  group     Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, address])
+  @@index([address])
+}
+
+model Bill {
+  id          String   @id // "groupId:billId"
+  groupId     String
+  billId      String   // bill_id from contract (as string)
+  payer       String   // Algorand address
+  totalAmount BigInt   @db.UnsignedBigInt
+  memo        String   @db.Text
+  createdAt   DateTime @default(now())
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  debtors     Debtor[]
+
+  @@index([groupId])
+  @@index([payer])
+}
+
+model Debtor {
+  id       Int    @id @default(autoincrement())
+  billId   String
+  address  String // Algorand address
+  amount   BigInt @db.UnsignedBigInt
+  paid     BigInt @db.UnsignedBigInt
+  bill     Bill   @relation(fields: [billId], references: [id], onDelete: Cascade)
+
+  @@index([billId])
+  @@index([address])
+}
+
+model Friend {
+  id           Int     @id @default(autoincrement())
+  address      String  // User's Algorand address
+  friendAddress String // Friend's Algorand address
+  nickname     String? // Optional nickname for the friend
+
+  @@unique([address, friendAddress])
+  @@index([address])
+  @@index([friendAddress])
+}
+

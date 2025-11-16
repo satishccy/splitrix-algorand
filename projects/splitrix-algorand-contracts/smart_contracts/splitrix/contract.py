@@ -1,4 +1,4 @@
-from algopy import ARC4Contract, Account, BoxMap, Global, GlobalState, String, Txn, arc4, UInt64, subroutine, urange, gtxn
+from algopy import ARC4Contract, Account, BoxMap, Global, GlobalState, String, Txn, arc4, UInt64, log, subroutine, urange, gtxn
 
 class Group(arc4.Struct):
     admin: arc4.Address
@@ -90,8 +90,13 @@ class Splitrix(ARC4Contract):
         assert total_amount > 0, "Total amount must be greater than 0"
         assert debtors.length > 0, "At least one debtor must be provided"
         assert memo.bytes.length > 0, "Memo must be provided"
-
         group = self.groups[group_id.native].copy()
+
+        assert self.check_member_exists(group.members.copy(), payer), "Payer is not a member of the group"
+        for i in urange(debtors.length):
+            d = debtors[i].copy()
+            assert self.check_member_exists(group.members.copy(), d.debtor), "Debtor is not a member of the group"
+
         current_bill_id = group.bill_counter
 
         # ---- Build debtors list ----
@@ -185,4 +190,44 @@ class Splitrix(ARC4Contract):
         new_debtor.paid = arc4.UInt64(debtor.paid.native + amount_added)
         bill.debtors[sender_index.native] = new_debtor.copy()
         self.bills[bill_key] = bill.copy()
+        arc4.emit(BillChanged(bill_key=bill_key))
+
+    @arc4.abimethod()
+    def gas(self) -> None:
+        pass
+
+    @subroutine
+    def _get_group(self, group_id: arc4.UInt64) -> None:
+        if group_id.native in self.groups:
+            group = self.groups[group_id.native].copy()
+            log(group)
+        else:
+            log()
+
+    @subroutine
+    def _get_bill(self, bill_key: BillKey) -> None:
+        if bill_key in self.bills:
+            bill = self.bills[bill_key].copy()
+            log(bill)
+        else:
+            log()
+
+    @arc4.abimethod(readonly=True)
+    def get_group(self, group_id: arc4.UInt64) -> None:
+        self._get_group(group_id)
+
+    @arc4.abimethod(readonly=True)
+    def get_bill(self, bill_key: BillKey) -> None:
+        self._get_bill(bill_key)
        
+    @arc4.abimethod(readonly=True)
+    def get_groups(self, group_ids: arc4.DynamicArray[arc4.UInt64]) -> None:
+        for i in urange(group_ids.length):
+            group_id = group_ids[i]
+            self._get_group(group_id)
+
+    @arc4.abimethod(readonly=True)
+    def get_bills(self, bill_keys: arc4.DynamicArray[BillKey]) -> None:
+        for i in urange(bill_keys.length):
+            bill_key = bill_keys[i].copy()
+            self._get_bill(bill_key)

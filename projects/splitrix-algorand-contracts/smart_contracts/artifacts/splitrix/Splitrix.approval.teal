@@ -3,13 +3,13 @@
 
 // smart_contracts.splitrix.contract.Splitrix.__algopy_entrypoint_with_init() -> uint64:
 main:
-    intcblock 0 1 48 32
-    bytecblock "group_counter" 0x0000000000000000 "bills" 0x151f7c75 "groups" 0x77940ab8
+    intcblock 0 1 48 40
+    bytecblock "bills" "group_counter" 0x0000000000000000 "groups" 0x77940ab8 0x151f7c75
     txn ApplicationID
     bnz main_after_if_else@2
     // smart_contracts/splitrix/contract.py:44
     // self.group_counter.value = UInt64(0)
-    bytec_0 // "group_counter"
+    bytec_1 // "group_counter"
     intc_0 // 0
     app_global_put
 
@@ -17,19 +17,98 @@ main_after_if_else@2:
     // smart_contracts/splitrix/contract.py:40
     // class Splitrix(ARC4Contract):
     txn NumAppArgs
-    bz main_bare_routing@8
-    pushbytess 0x71800235 0x267a62fe 0xab5f6a13 // method "create_group(address,address[])uint64", method "create_bill(uint64,address,uint64,(address,uint64)[],string,(uint64,address,uint64,uint64,uint64)[])uint64", method "settle_bill(uint64,uint64,uint64,pay)void"
+    bz main_bare_routing@13
+    pushbytess 0x71800235 0x267a62fe 0xab5f6a13 0x3172ca9d 0xef027072 0xfc83cced 0x1baca274 0xa7ef327a // method "create_group(address,address[])uint64", method "create_bill(uint64,address,uint64,(address,uint64)[],string,(uint64,address,uint64,uint64,uint64)[])uint64", method "settle_bill(uint64,uint64,uint64,pay)void", method "gas()void", method "get_group(uint64)void", method "get_bill((uint64,uint64))void", method "get_groups(uint64[])void", method "get_bills((uint64,uint64)[])void"
     txna ApplicationArgs 0
-    match main_create_group_route@5 main_create_bill_route@6 main_settle_bill_route@7
+    match main_create_group_route@5 main_create_bill_route@6 main_settle_bill_route@7 main_gas_route@8 main_get_group_route@9 main_get_bill_route@10 main_get_groups_route@11 main_get_bills_route@12
 
-main_after_if_else@10:
+main_after_if_else@15:
     // smart_contracts/splitrix/contract.py:40
     // class Splitrix(ARC4Contract):
     intc_0 // 0
     return
 
+main_get_bills_route@12:
+    // smart_contracts/splitrix/contract.py:229
+    // @arc4.abimethod(readonly=True)
+    txn OnCompletion
+    !
+    assert // OnCompletion is not NoOp
+    txn ApplicationID
+    assert // can only call when not creating
+    // smart_contracts/splitrix/contract.py:40
+    // class Splitrix(ARC4Contract):
+    txna ApplicationArgs 1
+    // smart_contracts/splitrix/contract.py:229
+    // @arc4.abimethod(readonly=True)
+    callsub get_bills
+    intc_1 // 1
+    return
+
+main_get_groups_route@11:
+    // smart_contracts/splitrix/contract.py:223
+    // @arc4.abimethod(readonly=True)
+    txn OnCompletion
+    !
+    assert // OnCompletion is not NoOp
+    txn ApplicationID
+    assert // can only call when not creating
+    // smart_contracts/splitrix/contract.py:40
+    // class Splitrix(ARC4Contract):
+    txna ApplicationArgs 1
+    // smart_contracts/splitrix/contract.py:223
+    // @arc4.abimethod(readonly=True)
+    callsub get_groups
+    intc_1 // 1
+    return
+
+main_get_bill_route@10:
+    // smart_contracts/splitrix/contract.py:219
+    // @arc4.abimethod(readonly=True)
+    txn OnCompletion
+    !
+    assert // OnCompletion is not NoOp
+    txn ApplicationID
+    assert // can only call when not creating
+    // smart_contracts/splitrix/contract.py:40
+    // class Splitrix(ARC4Contract):
+    txna ApplicationArgs 1
+    // smart_contracts/splitrix/contract.py:219
+    // @arc4.abimethod(readonly=True)
+    callsub get_bill
+    intc_1 // 1
+    return
+
+main_get_group_route@9:
+    // smart_contracts/splitrix/contract.py:215
+    // @arc4.abimethod(readonly=True)
+    txn OnCompletion
+    !
+    assert // OnCompletion is not NoOp
+    txn ApplicationID
+    assert // can only call when not creating
+    // smart_contracts/splitrix/contract.py:40
+    // class Splitrix(ARC4Contract):
+    txna ApplicationArgs 1
+    // smart_contracts/splitrix/contract.py:215
+    // @arc4.abimethod(readonly=True)
+    callsub get_group
+    intc_1 // 1
+    return
+
+main_gas_route@8:
+    // smart_contracts/splitrix/contract.py:195
+    // @arc4.abimethod()
+    txn OnCompletion
+    !
+    assert // OnCompletion is not NoOp
+    txn ApplicationID
+    assert // can only call when not creating
+    intc_1 // 1
+    return
+
 main_settle_bill_route@7:
-    // smart_contracts/splitrix/contract.py:167
+    // smart_contracts/splitrix/contract.py:172
     // @arc4.abimethod()
     txn OnCompletion
     !
@@ -49,7 +128,7 @@ main_settle_bill_route@7:
     intc_1 // pay
     ==
     assert // transaction type is pay
-    // smart_contracts/splitrix/contract.py:167
+    // smart_contracts/splitrix/contract.py:172
     // @arc4.abimethod()
     callsub settle_bill
     intc_1 // 1
@@ -74,7 +153,7 @@ main_create_bill_route@6:
     // smart_contracts/splitrix/contract.py:77
     // @arc4.abimethod()
     callsub create_bill
-    bytec_3 // 0x151f7c75
+    bytec 5 // 0x151f7c75
     swap
     concat
     log
@@ -96,23 +175,80 @@ main_create_group_route@5:
     // smart_contracts/splitrix/contract.py:55
     // @arc4.abimethod()
     callsub create_group
-    bytec_3 // 0x151f7c75
+    bytec 5 // 0x151f7c75
     swap
     concat
     log
     intc_1 // 1
     return
 
-main_bare_routing@8:
+main_bare_routing@13:
     // smart_contracts/splitrix/contract.py:40
     // class Splitrix(ARC4Contract):
     txn OnCompletion
-    bnz main_after_if_else@10
+    bnz main_after_if_else@15
     txn ApplicationID
     !
     assert // can only call when creating
     intc_1 // 1
     return
+
+
+// smart_contracts.splitrix.contract.Splitrix.check_member_exists(members: bytes, member: bytes) -> uint64, bytes:
+check_member_exists:
+    // smart_contracts/splitrix/contract.py:48-49
+    // @subroutine
+    // def check_member_exists(self, members: arc4.DynamicArray[arc4.Address], member: arc4.Address) -> bool:
+    proto 2 2
+    // smart_contracts/splitrix/contract.py:50
+    // for m in members:
+    frame_dig -2
+    intc_0 // 0
+    extract_uint16
+    intc_0 // 0
+
+check_member_exists_for_header@1:
+    // smart_contracts/splitrix/contract.py:50
+    // for m in members:
+    frame_dig 1
+    frame_dig 0
+    <
+    bz check_member_exists_after_for@6
+    frame_dig -2
+    extract 2 0
+    frame_dig 1
+    pushint 32 // 32
+    *
+    pushint 32 // 32
+    extract3 // on error: Index access is out of bounds
+    // smart_contracts/splitrix/contract.py:51
+    // if m == member:
+    frame_dig -1
+    ==
+    bz check_member_exists_after_if_else@4
+    // smart_contracts/splitrix/contract.py:52
+    // return True
+    intc_1 // 1
+    frame_dig -2
+    uncover 3
+    uncover 3
+    retsub
+
+check_member_exists_after_if_else@4:
+    frame_dig 1
+    intc_1 // 1
+    +
+    frame_bury 1
+    b check_member_exists_for_header@1
+
+check_member_exists_after_for@6:
+    // smart_contracts/splitrix/contract.py:53
+    // return False
+    intc_0 // 0
+    frame_dig -2
+    uncover 3
+    uncover 3
+    retsub
 
 
 // smart_contracts.splitrix.contract.Splitrix.create_group(admin: bytes, members: bytes) -> bytes:
@@ -122,13 +258,10 @@ create_group:
     // def create_group(self, admin: arc4.Address, members: arc4.DynamicArray[arc4.Address]) -> arc4.UInt64:
     proto 2 1
     intc_0 // 0
-    dup
-    pushbytes ""
-    dup
     // smart_contracts/splitrix/contract.py:57
     // group_id = self.group_counter.value
-    intc_0 // 0
-    bytec_0 // "group_counter"
+    dupn 2
+    bytec_1 // "group_counter"
     app_global_get_ex
     swap
     dup
@@ -138,7 +271,7 @@ create_group:
     // self.group_counter.value = group_id + 1
     intc_1 // 1
     +
-    bytec_0 // "group_counter"
+    bytec_1 // "group_counter"
     swap
     app_global_put
     // smart_contracts/splitrix/contract.py:59
@@ -156,16 +289,16 @@ create_group:
 create_group_for_header@1:
     // smart_contracts/splitrix/contract.py:60
     // for m in members:
-    frame_dig 7
-    frame_dig 6
+    frame_dig 5
+    frame_dig 4
     <
     bz create_group_after_for@7
     frame_dig -1
     extract 2 0
-    frame_dig 7
-    intc_3 // 32
+    frame_dig 5
+    pushint 32 // 32
     *
-    intc_3 // 32
+    pushint 32 // 32
     extract3 // on error: Index access is out of bounds
     dup
     frame_bury 0
@@ -173,56 +306,26 @@ create_group_for_header@1:
     // if(m.native != Global.zero_address and not self.check_member_exists(new_members.copy(),m)):
     global ZeroAddress
     !=
-    frame_dig 5
+    frame_dig 3
     frame_bury 1
     bz create_group_after_if_else@5
-    // smart_contracts/splitrix/contract.py:50
-    // for m in members:
-    frame_dig 5
-    intc_0 // 0
-    extract_uint16
-    frame_bury 2
-    intc_0 // 0
-    frame_bury 3
-
-create_group_for_header@9:
-    // smart_contracts/splitrix/contract.py:50
-    // for m in members:
     frame_dig 3
-    frame_dig 2
-    <
-    bz create_group_after_for@13
-    frame_dig 5
-    extract 2 0
-    frame_dig 3
-    intc_3 // 32
-    *
-    intc_3 // 32
-    extract3 // on error: Index access is out of bounds
-    // smart_contracts/splitrix/contract.py:51
-    // if m == member:
+    dup
     frame_dig 0
-    ==
-    bz create_group_after_if_else@12
-    // smart_contracts/splitrix/contract.py:52
-    // return True
-    intc_1 // 1
-
-create_group_after_inlined_smart_contracts.splitrix.contract.Splitrix.check_member_exists@14:
-    frame_dig 5
+    callsub check_member_exists
+    pop
+    swap
     frame_bury 1
-    // smart_contracts/splitrix/contract.py:61
-    // if(m.native != Global.zero_address and not self.check_member_exists(new_members.copy(),m)):
     bnz create_group_after_if_else@5
     // smart_contracts/splitrix/contract.py:62
     // new_members.append(m)
-    frame_dig 5
+    frame_dig 3
     extract 2 0
     frame_dig 0
     concat
     dup
     len
-    intc_3 // 32
+    pushint 32 // 32
     /
     itob
     extract 6 2
@@ -232,32 +335,17 @@ create_group_after_inlined_smart_contracts.splitrix.contract.Splitrix.check_memb
 
 create_group_after_if_else@5:
     frame_dig 1
-    frame_bury 5
-    frame_dig 7
-    intc_1 // 1
-    +
-    frame_bury 7
-    b create_group_for_header@1
-
-create_group_after_if_else@12:
-    frame_dig 3
-    intc_1 // 1
-    +
     frame_bury 3
-    b create_group_for_header@9
-
-create_group_after_for@13:
-    // smart_contracts/splitrix/contract.py:53
-    // return False
-    intc_0 // 0
-    // smart_contracts/splitrix/contract.py:61
-    // if(m.native != Global.zero_address and not self.check_member_exists(new_members.copy(),m)):
-    b create_group_after_inlined_smart_contracts.splitrix.contract.Splitrix.check_member_exists@14
+    frame_dig 5
+    intc_1 // 1
+    +
+    frame_bury 5
+    b create_group_for_header@1
 
 create_group_after_for@7:
     // smart_contracts/splitrix/contract.py:63
     // assert new_members.length > 1, "At least two members must be provided"
-    frame_dig 5
+    frame_dig 3
     dup
     intc_0 // 0
     extract_uint16
@@ -273,15 +361,15 @@ create_group_after_for@7:
     // smart_contracts/splitrix/contract.py:65
     // self.groups[group_id] = Group(admin=admin,bill_counter=arc4.UInt64(0),members=new_members.copy())
     frame_dig -2
-    bytec_1 // 0x0000000000000000
+    bytec_2 // 0x0000000000000000
     concat
     pushbytes 0x002a
     concat
     swap
     concat
-    frame_dig 4
+    frame_dig 2
     itob
-    bytec 4 // "groups"
+    bytec_3 // "groups"
     dig 1
     concat
     dup
@@ -316,7 +404,7 @@ create_bill:
     // ) -> arc4.UInt64:
     proto 6 1
     intc_0 // 0
-    dupn 5
+    dupn 7
     pushbytes ""
     dupn 4
     // smart_contracts/splitrix/contract.py:87-88
@@ -325,7 +413,7 @@ create_bill:
     frame_dig -6
     btoi
     itob
-    bytec 4 // "groups"
+    bytec_3 // "groups"
     swap
     concat
     dupn 2
@@ -341,7 +429,7 @@ create_bill:
     // smart_contracts/splitrix/contract.py:90
     // assert total_amount > 0, "Total amount must be greater than 0"
     frame_dig -4
-    bytec_1 // 0x0000000000000000
+    bytec_2 // 0x0000000000000000
     b>
     assert // Total amount must be greater than 0
     // smart_contracts/splitrix/contract.py:91
@@ -357,7 +445,7 @@ create_bill:
     frame_dig -2
     len
     assert // Memo must be provided
-    // smart_contracts/splitrix/contract.py:94
+    // smart_contracts/splitrix/contract.py:93
     // group = self.groups[group_id.native].copy()
     box_get
     swap
@@ -365,65 +453,120 @@ create_bill:
     uncover 2
     assert // check self.groups entry exists
     // smart_contracts/splitrix/contract.py:95
-    // current_bill_id = group.bill_counter
-    extract 32 8 // on error: Index access is out of bounds
-    // smart_contracts/splitrix/contract.py:97-98
-    // # ---- Build debtors list ----
-    // debtors_new = arc4.DynamicArray[Debtor]()
-    pushbytes 0x0000
-    // smart_contracts/splitrix/contract.py:99
+    // assert self.check_member_exists(group.members.copy(), payer), "Payer is not a member of the group"
+    dup
+    intc_3 // 40
+    extract_uint16
+    dig 1
+    len
+    substring3
+    dup
+    frame_dig -5
+    callsub check_member_exists
+    pop
+    assert // Payer is not a member of the group
+    // smart_contracts/splitrix/contract.py:96
     // for i in urange(debtors.length):
     intc_0 // 0
 
 create_bill_for_header@1:
-    // smart_contracts/splitrix/contract.py:99
+    // smart_contracts/splitrix/contract.py:96
     // for i in urange(debtors.length):
-    frame_dig 16
-    frame_dig 12
+    frame_dig 17
+    frame_dig 14
     <
-    bz create_bill_after_for@10
-    // smart_contracts/splitrix/contract.py:100
+    bz create_bill_after_for@4
+    // smart_contracts/splitrix/contract.py:97
     // d = debtors[i].copy()
     frame_dig -3
     extract 2 0
-    frame_dig 16
-    pushint 40 // 40
+    frame_dig 17
+    dup
+    cover 2
+    intc_3 // 40
     *
-    pushint 40 // 40
+    intc_3 // 40
+    extract3 // on error: Index access is out of bounds
+    // smart_contracts/splitrix/contract.py:98
+    // assert self.check_member_exists(group.members.copy(), d.debtor), "Debtor is not a member of the group"
+    extract 0 32 // on error: Index access is out of bounds
+    frame_dig 16
+    swap
+    callsub check_member_exists
+    pop
+    assert // Debtor is not a member of the group
+    // smart_contracts/splitrix/contract.py:96
+    // for i in urange(debtors.length):
+    intc_1 // 1
+    +
+    frame_bury 17
+    b create_bill_for_header@1
+
+create_bill_after_for@4:
+    // smart_contracts/splitrix/contract.py:100
+    // current_bill_id = group.bill_counter
+    frame_dig 15
+    extract 32 8 // on error: Index access is out of bounds
+    frame_bury 1
+    // smart_contracts/splitrix/contract.py:102-103
+    // # ---- Build debtors list ----
+    // debtors_new = arc4.DynamicArray[Debtor]()
+    pushbytes 0x0000
+    frame_bury 4
+    // smart_contracts/splitrix/contract.py:104
+    // for i in urange(debtors.length):
+    intc_0 // 0
+    frame_bury 17
+
+create_bill_for_header@5:
+    // smart_contracts/splitrix/contract.py:104
+    // for i in urange(debtors.length):
+    frame_dig 17
+    frame_dig 14
+    <
+    bz create_bill_after_for@14
+    // smart_contracts/splitrix/contract.py:105
+    // d = debtors[i].copy()
+    frame_dig -3
+    extract 2 0
+    frame_dig 17
+    intc_3 // 40
+    *
+    intc_3 // 40
     extract3 // on error: Index access is out of bounds
     dup
-    frame_bury 1
-    // smart_contracts/splitrix/contract.py:101
+    frame_bury 2
+    // smart_contracts/splitrix/contract.py:106
     // if d.debtor.native != Global.zero_address and not self.check_debtor_exists(debtors_new.copy(), d.debtor):
     extract 0 32 // on error: Index access is out of bounds
     dup
-    frame_bury 2
+    frame_bury 3
     global ZeroAddress
     !=
-    frame_dig 15
-    frame_bury 3
-    bz create_bill_after_if_else@8
+    frame_dig 4
+    frame_bury 5
+    bz create_bill_after_if_else@12
     // smart_contracts/splitrix/contract.py:71
     // for i in urange(debtors.length):
-    frame_dig 15
+    frame_dig 4
     intc_0 // 0
     extract_uint16
-    frame_bury 7
+    frame_bury 9
     intc_0 // 0
-    frame_bury 6
+    frame_bury 8
 
-create_bill_for_header@20:
+create_bill_for_header@24:
     // smart_contracts/splitrix/contract.py:71
     // for i in urange(debtors.length):
-    frame_dig 6
-    frame_dig 7
+    frame_dig 8
+    frame_dig 9
     <
-    bz create_bill_after_for@24
+    bz create_bill_after_for@28
     // smart_contracts/splitrix/contract.py:72
     // d = debtors[i].copy()
-    frame_dig 15
+    frame_dig 4
     extract 2 0
-    frame_dig 6
+    frame_dig 8
     intc_2 // 48
     *
     intc_2 // 48
@@ -431,35 +574,35 @@ create_bill_for_header@20:
     // smart_contracts/splitrix/contract.py:73
     // if d.debtor == debtor:
     extract 0 32 // on error: Index access is out of bounds
-    frame_dig 2
+    frame_dig 3
     ==
-    bz create_bill_after_if_else@23
+    bz create_bill_after_if_else@27
     // smart_contracts/splitrix/contract.py:74
     // return True
     intc_1 // 1
 
-create_bill_after_inlined_smart_contracts.splitrix.contract.Splitrix.check_debtor_exists@25:
-    frame_dig 15
-    frame_bury 3
-    // smart_contracts/splitrix/contract.py:101
+create_bill_after_inlined_smart_contracts.splitrix.contract.Splitrix.check_debtor_exists@29:
+    frame_dig 4
+    frame_bury 5
+    // smart_contracts/splitrix/contract.py:106
     // if d.debtor.native != Global.zero_address and not self.check_debtor_exists(debtors_new.copy(), d.debtor):
-    bnz create_bill_after_if_else@8
-    // smart_contracts/splitrix/contract.py:102
+    bnz create_bill_after_if_else@12
+    // smart_contracts/splitrix/contract.py:107
     // if d.debtor != payer:
-    frame_dig 2
+    frame_dig 3
     frame_dig -5
     !=
-    bz create_bill_else_body@6
-    // smart_contracts/splitrix/contract.py:103
+    bz create_bill_else_body@10
+    // smart_contracts/splitrix/contract.py:108
     // debtors_new.append(Debtor(debtor=d.debtor, amount=d.amount, paid=arc4.UInt64(0)))
-    frame_dig 15
+    frame_dig 4
     extract 2 0
-    frame_dig 1
-    extract 32 8 // on error: Index access is out of bounds
     frame_dig 2
+    extract 32 8 // on error: Index access is out of bounds
+    frame_dig 3
     swap
     concat
-    bytec_1 // 0x0000000000000000
+    bytec_2 // 0x0000000000000000
     concat
     concat
     dup
@@ -470,32 +613,32 @@ create_bill_after_inlined_smart_contracts.splitrix.contract.Splitrix.check_debto
     extract 6 2
     swap
     concat
-    frame_bury 15
+    frame_bury 4
 
-create_bill_after_if_else@7:
-    frame_dig 15
-    frame_bury 3
+create_bill_after_if_else@11:
+    frame_dig 4
+    frame_bury 5
 
-create_bill_after_if_else@8:
-    frame_dig 3
-    frame_bury 15
-    // smart_contracts/splitrix/contract.py:99
+create_bill_after_if_else@12:
+    frame_dig 5
+    frame_bury 4
+    // smart_contracts/splitrix/contract.py:104
     // for i in urange(debtors.length):
-    frame_dig 16
+    frame_dig 17
     intc_1 // 1
     +
-    frame_bury 16
-    b create_bill_for_header@1
+    frame_bury 17
+    b create_bill_for_header@5
 
-create_bill_else_body@6:
-    // smart_contracts/splitrix/contract.py:105-106
+create_bill_else_body@10:
+    // smart_contracts/splitrix/contract.py:110-111
     // # payer's own share is considered fully paid
     // debtors_new.append(Debtor(debtor=d.debtor, amount=d.amount, paid=d.amount))
-    frame_dig 15
+    frame_dig 4
     extract 2 0
-    frame_dig 1
-    extract 32 8 // on error: Index access is out of bounds
     frame_dig 2
+    extract 32 8 // on error: Index access is out of bounds
+    frame_dig 3
     dig 1
     concat
     swap
@@ -509,94 +652,94 @@ create_bill_else_body@6:
     extract 6 2
     swap
     concat
-    frame_bury 15
-    b create_bill_after_if_else@7
+    frame_bury 4
+    b create_bill_after_if_else@11
 
-create_bill_after_if_else@23:
+create_bill_after_if_else@27:
     // smart_contracts/splitrix/contract.py:71
     // for i in urange(debtors.length):
-    frame_dig 6
+    frame_dig 8
     intc_1 // 1
     +
-    frame_bury 6
-    b create_bill_for_header@20
+    frame_bury 8
+    b create_bill_for_header@24
 
-create_bill_after_for@24:
+create_bill_after_for@28:
     // smart_contracts/splitrix/contract.py:75
     // return False
     intc_0 // 0
-    // smart_contracts/splitrix/contract.py:101
+    // smart_contracts/splitrix/contract.py:106
     // if d.debtor.native != Global.zero_address and not self.check_debtor_exists(debtors_new.copy(), d.debtor):
-    b create_bill_after_inlined_smart_contracts.splitrix.contract.Splitrix.check_debtor_exists@25
+    b create_bill_after_inlined_smart_contracts.splitrix.contract.Splitrix.check_debtor_exists@29
 
-create_bill_after_for@10:
-    // smart_contracts/splitrix/contract.py:108
+create_bill_after_for@14:
+    // smart_contracts/splitrix/contract.py:113
     // assert debtors_new.length > 0, "At least one valid debtor must be provided"
-    frame_dig 15
+    frame_dig 4
     intc_0 // 0
     extract_uint16
     dup
-    frame_bury 8
+    frame_bury 10
     assert // At least one valid debtor must be provided
-    // smart_contracts/splitrix/contract.py:110-111
+    // smart_contracts/splitrix/contract.py:115-116
     // # ---- Check total matches ----
     // total_amount_calculated = UInt64(0)
     intc_0 // 0
-    frame_bury 10
-    // smart_contracts/splitrix/contract.py:112
+    frame_bury 12
+    // smart_contracts/splitrix/contract.py:117
     // for i in urange(debtors_new.length):
     intc_0 // 0
-    frame_bury 16
+    frame_bury 17
 
-create_bill_for_header@11:
-    // smart_contracts/splitrix/contract.py:112
+create_bill_for_header@15:
+    // smart_contracts/splitrix/contract.py:117
     // for i in urange(debtors_new.length):
-    frame_dig 16
-    frame_dig 8
+    frame_dig 17
+    frame_dig 10
     <
-    bz create_bill_after_for@14
-    // smart_contracts/splitrix/contract.py:113
+    bz create_bill_after_for@18
+    // smart_contracts/splitrix/contract.py:118
     // x = debtors_new[i].copy()
-    frame_dig 15
+    frame_dig 4
     extract 2 0
-    frame_dig 16
+    frame_dig 17
     dup
     cover 2
     intc_2 // 48
     *
     intc_2 // 48
     extract3 // on error: Index access is out of bounds
-    // smart_contracts/splitrix/contract.py:114
+    // smart_contracts/splitrix/contract.py:119
     // total_amount_calculated = total_amount_calculated + x.amount.native
-    intc_3 // 32
+    pushint 32 // 32
     extract_uint64
-    frame_dig 10
+    frame_dig 12
     +
-    frame_bury 10
-    // smart_contracts/splitrix/contract.py:112
+    frame_bury 12
+    // smart_contracts/splitrix/contract.py:117
     // for i in urange(debtors_new.length):
     intc_1 // 1
     +
-    frame_bury 16
-    b create_bill_for_header@11
+    frame_bury 17
+    b create_bill_for_header@15
 
-create_bill_after_for@14:
-    // smart_contracts/splitrix/contract.py:115
+create_bill_after_for@18:
+    // smart_contracts/splitrix/contract.py:120
     // assert total_amount_calculated == total_amount, "Total amount does not match the sum of the debtors' amounts"
-    frame_dig 10
+    frame_dig 12
     itob
     frame_dig -4
     b==
     assert // Total amount does not match the sum of the debtors' amounts
-    // smart_contracts/splitrix/contract.py:117-118
+    // smart_contracts/splitrix/contract.py:122-123
     // # ---- Save new bill ----
     // new_bill_key = BillKey(group_id=group_id, bill_id=current_bill_id)
     frame_dig -6
-    frame_dig 14
+    frame_dig 1
     concat
     dup
-    frame_bury 5
-    // smart_contracts/splitrix/contract.py:119-124
+    frame_bury 7
+    // smart_contracts/splitrix/contract.py:124-129
     // self.bills[new_bill_key] = Bill(
     //     payer=payer,
     //     total_amount=total_amount,
@@ -608,7 +751,7 @@ create_bill_after_for@14:
     concat
     pushbytes 0x002c
     concat
-    frame_dig 15
+    frame_dig 4
     dup
     cover 2
     len
@@ -621,14 +764,14 @@ create_bill_after_for@14:
     concat
     frame_dig -2
     concat
-    // smart_contracts/splitrix/contract.py:119
+    // smart_contracts/splitrix/contract.py:124
     // self.bills[new_bill_key] = Bill(
-    bytec_2 // "bills"
+    bytec_0 // "bills"
     uncover 2
     concat
     dup
     frame_bury 0
-    // smart_contracts/splitrix/contract.py:119-124
+    // smart_contracts/splitrix/contract.py:124-129
     // self.bills[new_bill_key] = Bill(
     //     payer=payer,
     //     total_amount=total_amount,
@@ -641,65 +784,65 @@ create_bill_after_for@14:
     dup
     uncover 2
     box_put
-    // smart_contracts/splitrix/contract.py:125
+    // smart_contracts/splitrix/contract.py:130
     // group.bill_counter = arc4.UInt64(current_bill_id.native + 1)
-    frame_dig 13
+    frame_dig 15
     dup
-    // smart_contracts/splitrix/contract.py:95
+    // smart_contracts/splitrix/contract.py:100
     // current_bill_id = group.bill_counter
-    intc_3 // 32
-    // smart_contracts/splitrix/contract.py:125
+    pushint 32 // 32
+    // smart_contracts/splitrix/contract.py:130
     // group.bill_counter = arc4.UInt64(current_bill_id.native + 1)
     extract_uint64
     intc_1 // 1
     +
     itob
     replace2 32
-    // smart_contracts/splitrix/contract.py:126
+    // smart_contracts/splitrix/contract.py:131
     // self.groups[group_id.native] = group.copy()
-    frame_dig 11
+    frame_dig 13
     dup
     box_del
     pop
     swap
     box_put
-    // smart_contracts/splitrix/contract.py:128-129
+    // smart_contracts/splitrix/contract.py:133-134
     // # ---- Reload new bill into memory for netting updates ----
     // new_bill = self.bills[new_bill_key].copy()
     box_get
     swap
-    frame_bury 4
+    frame_bury 6
     assert // check self.bills entry exists
-    // smart_contracts/splitrix/contract.py:131-132
+    // smart_contracts/splitrix/contract.py:136-137
     // # ---- Apply netting ----
     // for i in urange(payers_debt.length):
     frame_dig -1
     intc_0 // 0
     extract_uint16
-    frame_bury 9
+    frame_bury 11
     intc_0 // 0
-    frame_bury 16
+    frame_bury 17
 
-create_bill_for_header@15:
-    // smart_contracts/splitrix/contract.py:131-132
+create_bill_for_header@19:
+    // smart_contracts/splitrix/contract.py:136-137
     // # ---- Apply netting ----
     // for i in urange(payers_debt.length):
-    frame_dig 16
-    frame_dig 9
+    frame_dig 17
+    frame_dig 11
     <
-    bz create_bill_after_for@18
-    // smart_contracts/splitrix/contract.py:133
+    bz create_bill_after_for@22
+    // smart_contracts/splitrix/contract.py:138
     // pd = payers_debt[i].copy()
     frame_dig -1
     extract 2 0
-    frame_dig 16
+    frame_dig 17
     dup
     cover 2
     pushint 64 // 64
     *
     pushint 64 // 64
     extract3 // on error: Index access is out of bounds
-    // smart_contracts/splitrix/contract.py:135-136
+    // smart_contracts/splitrix/contract.py:140-141
     // # Validate and update old bill
     // old_bill_key = BillKey(group_id=group_id, bill_id=pd.bill_id)
     dup
@@ -707,21 +850,21 @@ create_bill_for_header@15:
     frame_dig -6
     swap
     concat
-    // smart_contracts/splitrix/contract.py:137
+    // smart_contracts/splitrix/contract.py:142
     // assert old_bill_key in self.bills, "Referenced bill does not exist"
-    bytec_2 // "bills"
+    bytec_0 // "bills"
     dig 1
     concat
     dup
     box_len
     bury 1
     assert // Referenced bill does not exist
-    // smart_contracts/splitrix/contract.py:138
+    // smart_contracts/splitrix/contract.py:143
     // old_bill = self.bills[old_bill_key].copy()
     dup
     box_get
     assert // check self.bills entry exists
-    // smart_contracts/splitrix/contract.py:139
+    // smart_contracts/splitrix/contract.py:144
     // assert old_bill.payer == pd.bill_payer, "Bill payer mismatch"
     dup
     extract 0 32 // on error: Index access is out of bounds
@@ -731,13 +874,13 @@ create_bill_for_header@15:
     dig 1
     ==
     assert // Bill payer mismatch
-    // smart_contracts/splitrix/contract.py:140
+    // smart_contracts/splitrix/contract.py:145
     // assert pd.payer_index_in_bill_debtors.native < old_bill.debtors.length, "Invalid debtor index"
     dig 4
-    pushint 40 // 40
+    intc_3 // 40
     extract_uint64
     dig 2
-    pushint 40 // 40
+    intc_3 // 40
     extract_uint16
     dig 3
     pushint 42 // 42
@@ -752,7 +895,7 @@ create_bill_for_header@15:
     dig 4
     >
     assert // Invalid debtor index
-    // smart_contracts/splitrix/contract.py:142
+    // smart_contracts/splitrix/contract.py:147
     // old_debtor = old_bill.debtors[pd.payer_index_in_bill_debtors.native].copy()
     dup
     extract 2 0
@@ -763,18 +906,18 @@ create_bill_for_header@15:
     dig 1
     intc_2 // 48
     extract3 // on error: Index access is out of bounds
-    // smart_contracts/splitrix/contract.py:143
+    // smart_contracts/splitrix/contract.py:148
     // cutoff = pd.amount_to_cutoff.native
     dig 9
     intc_2 // 48
     extract_uint64
-    // smart_contracts/splitrix/contract.py:144
+    // smart_contracts/splitrix/contract.py:149
     // assert cutoff <= (old_debtor.amount.native - old_debtor.paid.native), "Cutoff exceeds pending debt"
     dig 1
-    intc_3 // 32
+    pushint 32 // 32
     extract_uint64
     dig 2
-    pushint 40 // 40
+    intc_3 // 40
     extract_uint64
     swap
     dig 1
@@ -782,7 +925,7 @@ create_bill_for_header@15:
     dig 2
     >=
     assert // Cutoff exceeds pending debt
-    // smart_contracts/splitrix/contract.py:146-147
+    // smart_contracts/splitrix/contract.py:151-152
     // # Mark cutoff as paid in old bill
     // old_debtor.paid = arc4.UInt64(old_debtor.paid.native + cutoff)
     dig 1
@@ -791,7 +934,7 @@ create_bill_for_header@15:
     uncover 2
     swap
     replace2 40
-    // smart_contracts/splitrix/contract.py:148
+    // smart_contracts/splitrix/contract.py:153
     // old_bill.debtors[pd.payer_index_in_bill_debtors.native] = old_debtor.copy()
     uncover 2
     pushint 2 // 2
@@ -829,7 +972,7 @@ create_bill_for_header@15:
     itob
     extract 6 2
     replace2 42
-    // smart_contracts/splitrix/contract.py:149
+    // smart_contracts/splitrix/contract.py:154
     // self.bills[old_bill_key] = old_bill.copy()
     dig 3
     box_del
@@ -837,21 +980,21 @@ create_bill_for_header@15:
     uncover 3
     swap
     box_put
-    // smart_contracts/splitrix/contract.py:150
+    // smart_contracts/splitrix/contract.py:155
     // arc4.emit(BillChanged(bill_key=old_bill_key))
-    bytec 5 // method "BillChanged((uint64,uint64))"
+    bytec 4 // method "BillChanged((uint64,uint64))"
     uncover 3
     concat
     log
-    // smart_contracts/splitrix/contract.py:152-153
+    // smart_contracts/splitrix/contract.py:157-158
     // # Reflect cutoff in the new bill (payer must exist in new bill debtors)
     // assert pd.debtor_index_in_current_bill.native < new_bill.debtors.length, "Invalid debtor index"
     uncover 2
     pushint 56 // 56
     extract_uint64
-    frame_dig 4
+    frame_dig 6
     dup
-    pushint 40 // 40
+    intc_3 // 40
     extract_uint16
     dig 1
     pushint 42 // 42
@@ -866,7 +1009,7 @@ create_bill_for_header@15:
     dig 5
     >
     assert // Invalid debtor index
-    // smart_contracts/splitrix/contract.py:154
+    // smart_contracts/splitrix/contract.py:159
     // nd = new_bill.debtors[pd.debtor_index_in_current_bill.native].copy()
     dup
     extract 2 0
@@ -877,31 +1020,31 @@ create_bill_for_header@15:
     dig 1
     intc_2 // 48
     extract3 // on error: Index access is out of bounds
-    // smart_contracts/splitrix/contract.py:155
+    // smart_contracts/splitrix/contract.py:160
     // assert nd.debtor == pd.bill_payer, "New bill does not contain the payer from netting"
     dup
     extract 0 32 // on error: Index access is out of bounds
     uncover 8
     ==
     assert // New bill does not contain the payer from netting
-    // smart_contracts/splitrix/contract.py:156
+    // smart_contracts/splitrix/contract.py:161
     // assert nd.paid.native + cutoff <= nd.amount.native, "Cutoff exceeds new bill obligation"
     dup
-    pushint 40 // 40
+    intc_3 // 40
     extract_uint64
     uncover 7
     +
     dig 1
-    intc_3 // 32
+    pushint 32 // 32
     extract_uint64
     dig 1
     >=
     assert // Cutoff exceeds new bill obligation
-    // smart_contracts/splitrix/contract.py:157
+    // smart_contracts/splitrix/contract.py:162
     // nd.paid = arc4.UInt64(nd.paid.native + cutoff)
     itob
     replace2 40
-    // smart_contracts/splitrix/contract.py:158
+    // smart_contracts/splitrix/contract.py:163
     // new_bill.debtors[pd.debtor_index_in_current_bill.native] = nd.copy()
     swap
     pushint 2 // 2
@@ -937,66 +1080,67 @@ create_bill_for_header@15:
     itob
     extract 6 2
     replace2 42
-    frame_bury 4
-    // smart_contracts/splitrix/contract.py:131-132
+    frame_bury 6
+    // smart_contracts/splitrix/contract.py:136-137
     // # ---- Apply netting ----
     // for i in urange(payers_debt.length):
     intc_1 // 1
     +
-    frame_bury 16
-    b create_bill_for_header@15
+    frame_bury 17
+    b create_bill_for_header@19
 
-create_bill_after_for@18:
-    // smart_contracts/splitrix/contract.py:160-161
+create_bill_after_for@22:
+    // smart_contracts/splitrix/contract.py:165-166
     // # ---- Save the updated new bill ----
     // self.bills[new_bill_key] = new_bill.copy()
     frame_dig 0
     dup
     box_del
     pop
-    frame_dig 4
+    frame_dig 6
     box_put
-    // smart_contracts/splitrix/contract.py:163
+    // smart_contracts/splitrix/contract.py:168
     // arc4.emit(BillChanged(bill_key=new_bill_key))
-    bytec 5 // method "BillChanged((uint64,uint64))"
-    frame_dig 5
+    bytec 4 // method "BillChanged((uint64,uint64))"
+    frame_dig 7
     concat
     log
-    // smart_contracts/splitrix/contract.py:164
+    // smart_contracts/splitrix/contract.py:169
     // return current_bill_id
-    frame_dig 14
+    frame_dig 1
     frame_bury 0
     retsub
 
 
 // smart_contracts.splitrix.contract.Splitrix.settle_bill(group_id: bytes, bill_id: bytes, sender_index: bytes, payment: uint64) -> void:
 settle_bill:
-    // smart_contracts/splitrix/contract.py:167-168
+    // smart_contracts/splitrix/contract.py:172-173
     // @arc4.abimethod()
     // def settle_bill(self, group_id: arc4.UInt64, bill_id: arc4.UInt64, sender_index: arc4.UInt64, payment: gtxn.PaymentTransaction) -> None:
     proto 4 0
-    // smart_contracts/splitrix/contract.py:169
+    // smart_contracts/splitrix/contract.py:174
     // bill_key = BillKey(group_id=group_id, bill_id=bill_id)
     frame_dig -4
     frame_dig -3
     concat
-    // smart_contracts/splitrix/contract.py:170
+    dup
+    // smart_contracts/splitrix/contract.py:175
     // assert bill_key in self.bills, "Bill does not exist"
-    bytec_2 // "bills"
+    bytec_0 // "bills"
     swap
     concat
     dupn 2
     box_len
     bury 1
     assert // Bill does not exist
-    // smart_contracts/splitrix/contract.py:171
+    // smart_contracts/splitrix/contract.py:176
     // bill = self.bills[bill_key].copy()
     box_get
     swap
     dup
     uncover 2
     assert // check self.bills entry exists
-    // smart_contracts/splitrix/contract.py:172
+    // smart_contracts/splitrix/contract.py:177
     // assert payment.receiver == bill.payer.native, "Payment must be sent to the payer"
     frame_dig -1
     gtxns Receiver
@@ -1004,12 +1148,12 @@ settle_bill:
     extract 0 32 // on error: Index access is out of bounds
     ==
     assert // Payment must be sent to the payer
-    // smart_contracts/splitrix/contract.py:173
+    // smart_contracts/splitrix/contract.py:178
     // assert sender_index.native < bill.debtors.length, "Sender index is out of bounds"
     frame_dig -2
     btoi
     dig 1
-    pushint 40 // 40
+    intc_3 // 40
     extract_uint16
     dup
     cover 2
@@ -1031,7 +1175,7 @@ settle_bill:
     dig 2
     >
     assert // Sender index is out of bounds
-    // smart_contracts/splitrix/contract.py:174
+    // smart_contracts/splitrix/contract.py:179
     // debtor = bill.debtors[sender_index.native].copy()
     extract 2 0
     swap
@@ -1042,71 +1186,71 @@ settle_bill:
     intc_2 // 48
     extract3 // on error: Index access is out of bounds
     dupn 2
-    // smart_contracts/splitrix/contract.py:175
+    // smart_contracts/splitrix/contract.py:180
     // assert debtor.debtor.native == payment.sender, "Sender is not a debtor for this bill"
     extract 0 32 // on error: Index access is out of bounds
     frame_dig -1
     gtxns Sender
     ==
     assert // Sender is not a debtor for this bill
-    // smart_contracts/splitrix/contract.py:176
+    // smart_contracts/splitrix/contract.py:181
     // amount_to_pay = debtor.amount.native - debtor.paid.native
     dup
-    intc_3 // 32
+    pushint 32 // 32
     extract_uint64
     swap
-    pushint 40 // 40
+    intc_3 // 40
     extract_uint64
     dup
     cover 2
     -
     dupn 2
-    // smart_contracts/splitrix/contract.py:178
+    // smart_contracts/splitrix/contract.py:183
     // assert amount_to_pay > 0, "Debt already paid"
     assert // Debt already paid
-    // smart_contracts/splitrix/contract.py:181
+    // smart_contracts/splitrix/contract.py:186
     // amount_added = payment.amount
     frame_dig -1
     gtxns Amount
     dup
     uncover 2
-    // smart_contracts/splitrix/contract.py:182
+    // smart_contracts/splitrix/contract.py:187
     // if amount_added > amount_to_pay:
     >
     bz settle_bill_after_if_else@2
-    frame_dig 8
-    frame_bury 9
+    frame_dig 9
+    frame_bury 10
 
 settle_bill_after_if_else@2:
-    // smart_contracts/splitrix/contract.py:185
+    // smart_contracts/splitrix/contract.py:190
     // new_debtor.paid = arc4.UInt64(debtor.paid.native + amount_added)
-    frame_dig 7
-    frame_dig 9
+    frame_dig 8
+    frame_dig 10
     +
     itob
-    frame_dig 6
+    frame_dig 7
     swap
     replace2 40
-    // smart_contracts/splitrix/contract.py:186
+    // smart_contracts/splitrix/contract.py:191
     // bill.debtors[sender_index.native] = new_debtor.copy()
-    frame_dig 5
+    frame_dig 6
     pushint 2 // 2
     +
-    frame_dig 4
+    frame_dig 5
     swap
     uncover 2
     replace3
-    frame_dig 1
+    frame_dig 2
     dup
     intc_0 // 0
-    frame_dig 2
+    frame_dig 3
     dup
     cover 5
     extract3
     dig 1
     len
     uncover 2
-    frame_dig 3
+    frame_dig 4
     dup
     cover 4
     uncover 2
@@ -1130,12 +1274,209 @@ settle_bill_after_if_else@2:
     itob
     extract 6 2
     replace2 42
-    // smart_contracts/splitrix/contract.py:187
+    // smart_contracts/splitrix/contract.py:192
     // self.bills[bill_key] = bill.copy()
-    frame_dig 0
+    frame_dig 1
     dup
     box_del
     pop
     swap
     box_put
+    // smart_contracts/splitrix/contract.py:193
+    // arc4.emit(BillChanged(bill_key=bill_key))
+    bytec 4 // method "BillChanged((uint64,uint64))"
+    frame_dig 0
+    concat
+    log
+    retsub
+
+
+// smart_contracts.splitrix.contract.Splitrix._get_group(group_id: bytes) -> void:
+_get_group:
+    // smart_contracts/splitrix/contract.py:199-200
+    // @subroutine
+    // def _get_group(self, group_id: arc4.UInt64) -> None:
+    proto 1 0
+    // smart_contracts/splitrix/contract.py:201
+    // if group_id.native in self.groups:
+    frame_dig -1
+    btoi
+    itob
+    bytec_3 // "groups"
+    swap
+    concat
+    dup
+    box_len
+    bury 1
+    bz _get_group_else_body@2
+    // smart_contracts/splitrix/contract.py:202
+    // group = self.groups[group_id.native].copy()
+    frame_dig 0
+    box_get
+    assert // check self.groups entry exists
+    // smart_contracts/splitrix/contract.py:203
+    // log(group)
+    log
+    retsub
+
+_get_group_else_body@2:
+    // smart_contracts/splitrix/contract.py:205
+    // log()
+    pushbytes ""
+    log
+    retsub
+
+
+// smart_contracts.splitrix.contract.Splitrix._get_bill(bill_key: bytes) -> bytes:
+_get_bill:
+    // smart_contracts/splitrix/contract.py:207-208
+    // @subroutine
+    // def _get_bill(self, bill_key: BillKey) -> None:
+    proto 1 1
+    // smart_contracts/splitrix/contract.py:209
+    // if bill_key in self.bills:
+    bytec_0 // "bills"
+    frame_dig -1
+    concat
+    dup
+    box_len
+    bury 1
+    bz _get_bill_else_body@2
+    // smart_contracts/splitrix/contract.py:210
+    // bill = self.bills[bill_key].copy()
+    frame_dig 0
+    box_get
+    assert // check self.bills entry exists
+    // smart_contracts/splitrix/contract.py:211
+    // log(bill)
+    log
+
+_get_bill_after_if_else@3:
+    frame_dig -1
+    swap
+    retsub
+
+_get_bill_else_body@2:
+    // smart_contracts/splitrix/contract.py:213
+    // log()
+    pushbytes ""
+    log
+    b _get_bill_after_if_else@3
+
+
+// smart_contracts.splitrix.contract.Splitrix.get_group(group_id: bytes) -> void:
+get_group:
+    // smart_contracts/splitrix/contract.py:215-216
+    // @arc4.abimethod(readonly=True)
+    // def get_group(self, group_id: arc4.UInt64) -> None:
+    proto 1 0
+    // smart_contracts/splitrix/contract.py:217
+    // self._get_group(group_id)
+    frame_dig -1
+    callsub _get_group
+    retsub
+
+
+// smart_contracts.splitrix.contract.Splitrix.get_bill(bill_key: bytes) -> void:
+get_bill:
+    // smart_contracts/splitrix/contract.py:219-220
+    // @arc4.abimethod(readonly=True)
+    // def get_bill(self, bill_key: BillKey) -> None:
+    proto 1 0
+    // smart_contracts/splitrix/contract.py:221
+    // self._get_bill(bill_key)
+    frame_dig -1
+    callsub _get_bill
+    frame_bury -1
+    retsub
+
+
+// smart_contracts.splitrix.contract.Splitrix.get_groups(group_ids: bytes) -> void:
+get_groups:
+    // smart_contracts/splitrix/contract.py:223-224
+    // @arc4.abimethod(readonly=True)
+    // def get_groups(self, group_ids: arc4.DynamicArray[arc4.UInt64]) -> None:
+    proto 1 0
+    // smart_contracts/splitrix/contract.py:225
+    // for i in urange(group_ids.length):
+    frame_dig -1
+    intc_0 // 0
+    extract_uint16
+    intc_0 // 0
+
+get_groups_for_header@1:
+    // smart_contracts/splitrix/contract.py:225
+    // for i in urange(group_ids.length):
+    frame_dig 1
+    frame_dig 0
+    <
+    bz get_groups_after_for@4
+    // smart_contracts/splitrix/contract.py:226
+    // group_id = group_ids[i]
+    frame_dig -1
+    extract 2 0
+    frame_dig 1
+    dup
+    cover 2
+    pushint 8 // 8
+    *
+    pushint 8 // 8
+    extract3 // on error: Index access is out of bounds
+    // smart_contracts/splitrix/contract.py:227
+    // self._get_group(group_id)
+    callsub _get_group
+    // smart_contracts/splitrix/contract.py:225
+    // for i in urange(group_ids.length):
+    intc_1 // 1
+    +
+    frame_bury 1
+    b get_groups_for_header@1
+
+get_groups_after_for@4:
+    retsub
+
+
+// smart_contracts.splitrix.contract.Splitrix.get_bills(bill_keys: bytes) -> void:
+get_bills:
+    // smart_contracts/splitrix/contract.py:229-230
+    // @arc4.abimethod(readonly=True)
+    // def get_bills(self, bill_keys: arc4.DynamicArray[BillKey]) -> None:
+    proto 1 0
+    // smart_contracts/splitrix/contract.py:231
+    // for i in urange(bill_keys.length):
+    frame_dig -1
+    intc_0 // 0
+    extract_uint16
+    intc_0 // 0
+
+get_bills_for_header@1:
+    // smart_contracts/splitrix/contract.py:231
+    // for i in urange(bill_keys.length):
+    frame_dig 1
+    frame_dig 0
+    <
+    bz get_bills_after_for@4
+    // smart_contracts/splitrix/contract.py:232
+    // bill_key = bill_keys[i].copy()
+    frame_dig -1
+    extract 2 0
+    frame_dig 1
+    dup
+    cover 2
+    pushint 16 // 16
+    *
+    pushint 16 // 16
+    extract3 // on error: Index access is out of bounds
+    // smart_contracts/splitrix/contract.py:233
+    // self._get_bill(bill_key)
+    callsub _get_bill
+    pop
+    // smart_contracts/splitrix/contract.py:231
+    // for i in urange(bill_keys.length):
+    intc_1 // 1
+    +
+    frame_bury 1
+    b get_bills_for_header@1
+
+get_bills_after_for@4:
     retsub

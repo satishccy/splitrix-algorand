@@ -1,101 +1,108 @@
-# splitrix-algorand-contracts
+# Splitrix Algorand Smart Contracts
 
-This project has been generated using AlgoKit. See below for default getting started instructions.
+This directory contains the Splitrix smart contract, written in `puya-py` for the Algorand blockchain. The contract manages group creation, bill splitting, and debt settlement with automated netting capabilities.
 
-# Setup
+This project was generated using AlgoKit.
+
+---
+
+## 🔐 Contract Deployment & Verification
+
+**Deployed Contract Information:**
+
+- **App ID:** `749724159`
+- **Network:** Algorand TestNet
+- **Contract Address:** `LGOX77WSBN32DR2FBDBOWVRKV545OKKJBJXDQNVSRVN4ZJZB4OPLSIGUNQ`
+- **ABI:** [See ABI](smart_contracts/artifacts/splitrix/Splitrix.arc56.json)
+
+**Verification Steps:**
+
+1. Visit [Lora App Lab](https://lora.algokit.io/testnet/app-lab)
+2. Create a new app interface using `Use Existing App` section using deployed App Id `749724159` and select [this abi](smart_contracts/artifacts/splitrix/Splitrix.arc56.json)
+3. Open Below Transaction Links
+
+Create Group Transaction Link:
+[https://lora.algokit.io/testnet/transaction/M4VETIS5DYXRCFEFPM64P2VC5B3VIJVKRVT4CWJPQGGDHHP5QQPQ](https://lora.algokit.io/testnet/transaction/M4VETIS5DYXRCFEFPM64P2VC5B3VIJVKRVT4CWJPQGGDHHP5QQPQ)
+
+Create Bill Transaction Link:
+[https://lora.algokit.io/testnet/transaction/7ZJC3WVF465YWOY2AXAOFE4PYXYEKO64Y4FPA5BHEUSNXGKNEPDQ](https://lora.algokit.io/testnet/transaction/7ZJC3WVF465YWOY2AXAOFE4PYXYEKO64Y4FPA5BHEUSNXGKNEPDQ)
+
+Settle Bill Transaction Link:
+[https://lora.algokit.io/testnet/block/57561833/group/ClzEwFHJC4RwtbrkKQDll%2B2QD%2Fem6oq2Yl%2FaSp%2BopuQ%3D](https://lora.algokit.io/testnet/block/57561833/group/ClzEwFHJC4RwtbrkKQDll%2B2QD%2Fem6oq2Yl%2FaSp%2BopuQ%3D)
+
+---
+
+## 📜 ABI Methods & Events
+
+### Structs
+
+| Struct          | Fields                                                                                                                                              | Description                                                                  |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `Group`         | `admin: Address`, `bill_counter: UInt64`, `members: Address[]`                                                                                      | Represents a group of members who can split bills.                           |
+| `Debtor`        | `debtor: Address`, `amount: UInt64`, `paid: UInt64`                                                                                                 | Represents a debtor in a bill, including the amount paid.                    |
+| `DebtorMinimal` | `debtor: Address`, `amount: UInt64`                                                                                                                 | A minimal representation of a debtor used for creating bills.                |
+| `Bill`          | `payer: Address`, `total_amount: UInt64`, `debtors: Debtor[]`, `memo: String`                                                                       | Represents a bill, including the payer, total amount, and list of debtors.   |
+| `BillKey`       | `group_id: UInt64`, `bill_id: UInt64`                                                                                                               | A unique key to identify a bill within a group.                              |
+| `PayerDebt`     | `bill_id: UInt64`, `bill_payer: Address`, `payer_index_in_bill_debtors: UInt64`, `amount_to_cutoff: UInt64`, `debtor_index_in_current_bill: UInt64` | Used for netting to specify a previous debt to be offset against a new bill. |
+
+### ABI Methods
+
+| Method         | Inputs                                                                                                                               | Outputs                  | Description                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ | ---------------------------------------------------------------- |
+| `create_group` | `admin: Address`, `members: Address[]`                                                                                               | `group_id: UInt64`       | Creates a new expense group.                                     |
+| `create_bill`  | `group_id: UInt64`, `payer: Address`, `total_amount: UInt64`, `debtors: DebtorMinimal[]`, `memo: String`, `payers_debt: PayerDebt[]` | `bill_id: UInt64`        | Creates a bill with advanced netting.                            |
+| `settle_bill`  | `group_id: UInt64`, `bill_id: UInt64`, `sender_index: UInt64`, `payment: PaymentTransaction`                                         | `None`                   | Settles a specific debt in a bill via a payment transaction.     |
+| `get_group`    | `group_id: UInt64`                                                                                                                   | `None` (logs group data) | Retrieves and logs group details. Readonly.                      |
+| `get_bill`     | `bill_key: BillKey`                                                                                                                  | `None` (logs bill data)  | Retrieves and logs bill details. Readonly.                       |
+| `get_groups`   | `group_ids: UInt64[]`                                                                                                                | `None` (logs group data) | Retrieves and logs details for multiple groups. Readonly.        |
+| `get_bills`    | `bill_keys: BillKey[]`                                                                                                               | `None` (logs bill data)  | Retrieves and logs details for multiple bills. Readonly.         |
+| `gas`          | -                                                                                                                                    | -                        | Empty method to increase opcode budget for complex transactions. |
+
+### ARC-28 Events
+
+| Event          | Payload             | Description                                                                               |
+| -------------- | ------------------- | ----------------------------------------------------------------------------------------- |
+| `GroupCreated` | `group_id: UInt64`  | Emitted when a new group is created.                                                      |
+| `BillChanged`  | `bill_key: BillKey` | Emitted when a bill is created or its state is updated (e.g., via netting or settlement). |
+
+---
+
+## 🛠️ Development Setup
 
 ### Pre-requisites
 
 - [Python 3.12](https://www.python.org/downloads/) or later
-- [Docker](https://www.docker.com/) (only required for LocalNet)
+- [Docker](https://www.docker.com/)
+- [AlgoKit CLI](https://github.com/algorandfoundation/algokit-cli#install)
 
-> For interactive tour over the codebase, download [vsls-contrib.codetour](https://marketplace.visualstudio.com/items?itemName=vsls-contrib.codetour) extension for VS Code, then open the [`.codetour.json`](./.tours/getting-started-with-your-algokit-project.tour) file in code tour extension.
+### Installation and Deployment
 
-### Initial Setup
+1. **Bootstrap Environment**
 
-#### 1. Clone the Repository
-Start by cloning this repository to your local machine.
+   ```bash
+   algokit project bootstrap all
+   ```
 
-#### 2. Install Pre-requisites
-Ensure the following pre-requisites are installed and properly configured:
+2. **Build Contracts**
 
-- **Docker**: Required for running a local Algorand network. [Install Docker](https://www.docker.com/).
-- **AlgoKit CLI**: Essential for project setup and operations. Install the latest version from [AlgoKit CLI Installation Guide](https://github.com/algorandfoundation/algokit-cli#install). Verify installation with `algokit --version`, expecting `2.0.0` or later.
+   ```bash
+   algokit project run build
+   ```
 
-#### 3. Bootstrap Your Local Environment
-Run the following commands within the project folder:
+3. **Deploy to LocalNet**
+   ```bash
+   algokit project deploy localnet
+   # Note the App ID from output and update .env files in other projects
+   ```
 
-- **Install Poetry**: Required for Python dependency management. [Installation Guide](https://python-poetry.org/docs/#installation). Verify with `poetry -V` to see version `1.2`+.
-- **Setup Project**: Execute `algokit project bootstrap all` to install dependencies and setup a Python virtual environment in `.venv`.
-- **Configure environment**: Execute `algokit generate env-file -a target_network localnet` to create a `.env.localnet` file with default configuration for `localnet`.
-- **Start LocalNet**: Use `algokit localnet start` to initiate a local Algorand network.
+---
 
-### Development Workflow
+## 🔧 Tools
 
-#### Terminal
-Directly manage and interact with your project using AlgoKit commands:
+This project uses the following tools:
 
-1. **Build Contracts**: `algokit project run build` compiles all smart contracts. You can also specify a specific contract by passing the name of the contract folder as an extra argument.
-For example: `algokit project run build -- hello_world` will only build the `hello_world` contract.
-2. **Deploy**: Use `algokit project deploy localnet` to deploy contracts to the local network. You can also specify a specific contract by passing the name of the contract folder as an extra argument.
-For example: `algokit project deploy localnet -- hello_world` will only deploy the `hello_world` contract.
-
-#### VS Code 
-For a seamless experience with breakpoint debugging and other features:
-
-1. **Open Project**: In VS Code, open the repository root.
-2. **Install Extensions**: Follow prompts to install recommended extensions.
-3. **Debugging**:
-   - Use `F5` to start debugging.
-   - **Windows Users**: Select the Python interpreter at `./.venv/Scripts/python.exe` via `Ctrl/Cmd + Shift + P` > `Python: Select Interpreter` before the first run.
-
-#### JetBrains IDEs
-While primarily optimized for VS Code, JetBrains IDEs are supported:
-
-1. **Open Project**: In your JetBrains IDE, open the repository root.
-2. **Automatic Setup**: The IDE should configure the Python interpreter and virtual environment.
-3. **Debugging**: Use `Shift+F10` or `Ctrl+R` to start debugging. Note: Windows users may encounter issues with pre-launch tasks due to a known bug. See [JetBrains forums](https://youtrack.jetbrains.com/issue/IDEA-277486/Shell-script-configuration-cannot-run-as-before-launch-task) for workarounds.
-
-## AlgoKit Workspaces and Project Management
-This project supports both standalone and monorepo setups through AlgoKit workspaces. Leverage [`algokit project run`](https://github.com/algorandfoundation/algokit-cli/blob/main/docs/features/project/run.md) commands for efficient monorepo project orchestration and management across multiple projects within a workspace.
-
-## AlgoKit Generators
-
-This template provides a set of [algokit generators](https://github.com/algorandfoundation/algokit-cli/blob/main/docs/features/generate.md) that allow you to further modify the project instantiated from the template to fit your needs, as well as giving you a base to build your own extensions to invoke via the `algokit generate` command.
-
-### Generate Smart Contract 
-
-By default the template creates a single `HelloWorld` contract under splitrix folder in the `smart_contracts` directory. To add a new contract:
-
-1. From the root of the project (`../`) execute `algokit generate smart-contract`. This will create a new starter smart contract and deployment configuration file under `{your_contract_name}` subfolder in the `smart_contracts` directory.
-2. Each contract potentially has different creation parameters and deployment steps. Hence, you need to define your deployment logic in `deploy_config.py`file.
-3. `config.py` file will automatically build all contracts in the `smart_contracts` directory. If you want to build specific contracts manually, modify the default code provided by the template in `config.py` file.
-
-> Please note, above is just a suggested convention tailored for the base configuration and structure of this template. The default code supplied by the template in `config.py` and `index.ts` (if using ts clients) files are tailored for the suggested convention. You are free to modify the structure and naming conventions as you see fit.
-
-### Generate '.env' files
-
-By default the template instance does not contain any env files. Using [`algokit project deploy`](https://github.com/algorandfoundation/algokit-cli/blob/main/docs/features/project/deploy.md) against `localnet` | `testnet` | `mainnet` will use default values for `algod` and `indexer` unless overwritten via `.env` or `.env.{target_network}`. 
-
-To generate a new `.env` or `.env.{target_network}` file, run `algokit generate env-file`
-
-### Debugging Smart Contracts
-
-This project is optimized to work with AlgoKit AVM Debugger extension. To activate it:
-Refer to the commented header in the `__main__.py` file in the `smart_contracts` folder.
-
-If you have opted in to include VSCode launch configurations in your project, you can also use the `Debug TEAL via AlgoKit AVM Debugger` launch configuration to interactively select an available trace file and launch the debug session for your smart contract.
-
-For information on using and setting up the `AlgoKit AVM Debugger` VSCode extension refer [here](https://github.com/algorandfoundation/algokit-avm-vscode-debugger). To install the extension from the VSCode Marketplace, use the following link: [AlgoKit AVM Debugger extension](https://marketplace.visualstudio.com/items?itemName=algorandfoundation.algokit-avm-vscode-debugger).
-
-# Tools
-
-This project makes use of Algorand Python to build Algorand smart contracts. The following tools are in use:
-
-- [Algorand](https://www.algorand.com/) - Layer 1 Blockchain; [Developer portal](https://dev.algorand.co/), [Why Algorand?](https://dev.algorand.co/getting-started/why-algorand/)
-- [AlgoKit](https://github.com/algorandfoundation/algokit-cli) - One-stop shop tool for developers building on the Algorand network; [docs](https://github.com/algorandfoundation/algokit-cli/blob/main/docs/algokit.md), [intro tutorial](https://github.com/algorandfoundation/algokit-cli/blob/main/docs/tutorials/intro.md)
-- [Algorand Python](https://github.com/algorandfoundation/puya) - A semantically and syntactically compatible, typed Python language that works with standard Python tooling and allows you to express smart contracts (apps) and smart signatures (logic signatures) for deployment on the Algorand Virtual Machine (AVM); [docs](https://github.com/algorandfoundation/puya), [examples](https://github.com/algorandfoundation/puya/tree/main/examples)
-- [AlgoKit Utils](https://github.com/algorandfoundation/algokit-utils-py) - A set of core Algorand utilities that make it easier to build solutions on Algorand.
-- [Poetry](https://python-poetry.org/): Python packaging and dependency management.
-It has also been configured to have a productive dev experience out of the box in [VS Code](https://code.visualstudio.com/), see the [.vscode](./.vscode) folder.
-
+- [Algorand](https://www.algorand.com/)
+- [AlgoKit](https://github.com/algorandfoundation/algokit-cli)
+- [Algorand Python (puya-py)](https://github.com/algorandfoundation/puya)
+- [AlgoKit Utils](https://github.com/algorandfoundation/algokit-utils-py)
+- [Poetry](https://python-poetry.org/)

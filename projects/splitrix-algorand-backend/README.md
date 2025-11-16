@@ -1,73 +1,127 @@
 # Splitrix Backend - Custom Indexer & API Server
 
-Backend system for Splitrix bill-splitting smart contract on Algorand. Includes a custom indexer that syncs blockchain events to MySQL and REST APIs for frontend consumption.
-
-## Smart Contract Analysis
-
-### Contract Logic Review
-
-**Correct Logic:**
-- ✅ Group creation with admin and member validation
-- ✅ Bill creation with debtor validation and amount verification
-- ✅ Netting logic to offset debts between bills
-- ✅ Settlement tracking with payment transactions
-
-### Identified Issues
-
-1. **Missing Event Emission** (Line 188): `settle_bill` doesn't emit `BillChanged` event after updating the bill
-   ```python
-   # Missing after line 187:
-   arc4.emit(BillChanged(bill_key=bill_key))
-   ```
-   **Impact**: The indexer won't detect bill settlements, causing DB to be out of sync.
-
-2. **No Member Validation**: Neither `create_bill` nor debtors are validated against group membership
-   - Payer should be a group member
-   - All debtors should be group members
-   **Impact**: Bills can be created with non-members, breaking group integrity.
-
-3. **Box Storage Costs**: No MBR (Minimum Balance Requirement) handling - caller should pay for box storage
-   **Impact**: Contract may fail if caller doesn't have enough balance for box storage.
-
-4. **Integer Overflow**: While unlikely with UInt64, no explicit checks for addition overflow in amount calculations
-   **Impact**: Potential overflow in edge cases with very large amounts.
-
-5. **Group Admin Rights**: Admin role is stored but never used for access control
-   **Impact**: No way to enforce admin-only operations (e.g., removing members).
-
-### Recommended Improvements
-
-- Add event emission in `settle_bill` method
-- Add `check_is_group_member()` subroutine and validate payer/debtors in `create_bill`
-- Add `@arc4.abimethod()` read-only methods to get group/bill data from chain
-- Consider adding box MBR payment handling or documentation
-- Add admin-only methods (e.g., remove member, delete group)
+Backend system for the Splitrix dApp. This includes a custom indexer that syncs Algorand smart contract events to a MySQL database and a REST API server for the frontend.
 
 ## Architecture
 
-### Components
+```mermaid
+graph TB
 
-1. **Custom Indexer Worker**: Polls Algorand blocks, extracts contract events, syncs to MySQL
-2. **REST API Server**: Express.js server providing endpoints for groups, bills, balances, analytics
-3. **Database**: MySQL with Prisma ORM for data persistence
+%% =========================
+%% FRONTEND
+%% =========================
+subgraph FE[Frontend - React Application]
+    FE1[Wallet Integration]
+    FE2[Send Transactions to Algorand]
+    FE3[Call Backend API]
+end
+
+%% =========================
+%% BACKEND
+%% =========================
+subgraph BE[Backend - API + Custom Indexer]
+    BE1[REST API]
+    BE3[Custom Indexer
+    Sync Blocks & Parse ARC-28 Events]
+    BE4[MySQL Database]
+end
+
+%% =========================
+%% SMART CONTRACT
+%% =========================
+subgraph SC[Smart Contract]
+    SC1[Group & Bill Logic]
+    SC2[Emit ARC-28 Events]
+end
+
+%% =========================
+%% CONNECTIONS
+%% =========================
+
+FE1 -->|Signs Transactions| FE2
+FE2 -->|Signed Transactions| SC1
+SC2 -->|ARC-28 Events| BE3
+BE3 -->|Store Parsed Data| BE4
+FE3 <-->|Serves Offchain Data| BE1
+```
 
 ### Data Flow
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant Wallet
+    participant Frontend
+    participant AlgoNode
+    participant Contract
+    participant Custom Indexer
+    participant Backend
+    participant DB
+
+    User->>Frontend: Click "Create Bill"
+    Frontend->>Frontend: Validate inputs & netting
+    Frontend->>Wallet: Request signature
+    Wallet->>User: Confirm transaction
+    User->>Wallet: Approve
+    Wallet->>Frontend: Signed transaction
+    Frontend->>AlgoNode: Submit transaction
+    AlgoNode->>Contract: Execute create_bill()
+    Contract->>Contract: Store bill state
+    Contract->>AlgoNode: Emit BillChanged event (ARC-28)
+    Custom Indexer->>AlgoNode: Poll for new blocks
+    Custom Indexer->>Backend: Parse BillChanged event
+    Backend->>DB: Insert/Update bill record
+    Backend->>Frontend: Push update (WebSocket)
+    Frontend->>User: Display new bill
 ```
-Smart Contract → Algorand Node → Indexer Worker → MySQL → REST API → Frontend
-```
+
+---
+## 🛡️ Security & Integrity: Why Use a Custom Indexer?
+
+The backend custom indexer is critical for Splitrix's performance and security:
+
+- **Off-chain Computation:** Complex netting calculations and debt aggregation happen off-chain for speed.
+- **Performance:** Querying blockchain state directly is slow; the indexer caches data in MySQL for instant access.
+- **Queryability:** Enables complex queries (e.g., "show all unsettled bills for user X") that are impractical on-chain.
+- **ARC-28 Event Listening:** Ensures on-chain integrity by listening to contract-emitted events, not trusting user input.
+- **Auditability:** Every state change is traceable via events, providing a verifiable audit trail.
+
+---
 
 ## Setup
 
-1. Install dependencies: `npm install`
-2. Setup environment variables: Copy `.env.example` to `.env` and configure
-3. Start MySQL: `docker-compose up -d mysql`
-4. Run migrations: `npx prisma migrate dev`
-5. Start services: `npm run dev`
+1. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
+2. **Setup environment variables**
+   Copy `.env.sample` to `.env` and configure the database and Algorand node variables.
+   ```bash
+   cp .env.sample .env
+   ```
+3. **Setup Database**
+   Create a MySQL database named `splitrix`.
+    ```bash
+    mysql -u root -p -e "CREATE DATABASE splitrix;"
+    ```
+4. **Run migrations**
+   ```bash
+   pnpm prisma:migrate
+   ```
+5. **Start services**
+   This will start the API server and the indexer worker.
+   ```bash
+   pnpm dev
+   ```
 
 ## Environment Variables
 
-See `.env.example` for required configuration.
+See `.env.sample` for required configuration. Key variables include:
+- `INDEXER_URL`
+- `ALGOD_URL`
+- `ALGOD_TOKEN`
+- `DATABASE_URL`
+- `PORT`
 
 ## API Endpoints
 

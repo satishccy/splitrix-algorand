@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { GroupService } from '../../services/groupService';
 
-const router = Router();
+const router: Router = Router();
 const groupService = new GroupService();
 
 /**

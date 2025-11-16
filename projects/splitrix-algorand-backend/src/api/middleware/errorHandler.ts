@@ -5,12 +5,12 @@ export function errorHandler(
   req: Request,
   res: Response,
   next: NextFunction
-): void {
+) {
   console.error('Error:', err);
 
   // Prisma errors
   if (err.name === 'PrismaClientKnownRequestError') {
-    return res.status(400).json({
+    res.status(400).json({
       error: 'Database error',
       message: err.message,
     });

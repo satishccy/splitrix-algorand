@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { FriendService } from '../../services/friendService';
 
-const router = Router();
+const router: Router = Router();
 const friendService = new FriendService();
 
 /**

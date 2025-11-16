@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { BillService } from '../../services/billService';
 
-const router = Router();
+const router: Router = Router();
 const billService = new BillService();
 
 /**

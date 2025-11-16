@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { HelperService } from '../../services/helperService';
 
-const router = Router();
+const router: Router = Router();
 const helperService = new HelperService();
 
 /**

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { BalancesService } from '../../services/balancesService';
 
-const router = Router();
+const router: Router = Router();
 const balancesService = new BalancesService();
 
 /**

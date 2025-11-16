@@ -1,57 +1,51 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Receipt, Users, UserPlus, Settings, ChevronDown, Wallet, Menu, X, Copy } from 'lucide-react'
-import { Button } from "@/components/ui/button"
-import { useWallet } from "@txnlab/use-wallet-react"
-import WalletConnectModal from "@/components/wallet/WalletConnectModal"
+import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { LayoutDashboard, Receipt, Users, UserPlus, Settings, ChevronDown, Wallet, Menu, X, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useWallet } from "@txnlab/use-wallet-react";
+import WalletConnectModal from "@/components/wallet/WalletConnectModal";
 
 interface SidebarProps {
   // No props needed - using Next.js router
 }
 
 export function Sidebar({}: SidebarProps) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(true)
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [showWalletDetails, setShowWalletDetails] = useState(false)
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false)
-  
-  const { 
-    activeAccount, 
-    activeWallet,
-    disconnect
-  } = useWallet()
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showWalletDetails, setShowWalletDetails] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+
+  const { activeAccount, activeWallet } = useWallet();
 
   const handleDisconnectWallet = async () => {
     try {
       if (activeWallet) {
-        await activeWallet.disconnect()
-      } else {
-        await disconnect()
+        await activeWallet.disconnect();
       }
     } catch (error) {
-      console.error('Failed to disconnect wallet:', error)
+      console.error("Failed to disconnect wallet:", error);
     }
-  }
+  };
 
   const getShortAddress = (address: string | null) => {
-    if (!address) return ''
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
 
   const getWalletProvider = () => {
-    return activeWallet?.metadata?.name || 'Not Connected'
-  }
+    return activeWallet?.metadata?.name || "Not Connected";
+  };
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { id: "groups", label: "Groups", icon: Users, path: "/groups" },
     { id: "friends", label: "Friends", icon: UserPlus, path: "/friends" },
-    { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
-  ]
+    // { id: "settings", label: "Settings", icon: Settings, path: "/settings" },
+  ];
 
   return (
     <>
@@ -72,7 +66,7 @@ export function Sidebar({}: SidebarProps) {
         {/* Header */}
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-linear-to-br from-primary to-primary-dark flex items-center justify-center">
               <Wallet size={24} className="text-primary-foreground" />
             </div>
             <div>
@@ -85,25 +79,23 @@ export function Sidebar({}: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.path || pathname?.startsWith(item.path + '/')
+            const Icon = item.icon;
+            const isActive = pathname === item.path || pathname?.startsWith(item.path + "/");
             return (
               <button
                 key={item.id}
                 onClick={() => {
-                  router.push(item.path)
-                  setIsOpen(false)
+                  router.push(item.path);
+                  setIsOpen(false);
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                    : "text-foreground hover:bg-surface-light"
+                  isActive ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30" : "text-foreground hover:bg-surface-light"
                 }`}
               >
                 <Icon size={20} />
                 <span className="font-medium">{item.label}</span>
               </button>
-            )
+            );
           })}
         </nav>
 
@@ -113,25 +105,22 @@ export function Sidebar({}: SidebarProps) {
             <div className="px-4 py-3 rounded-lg bg-success/10 border border-success/30">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-muted-foreground">Wallet Connected</p>
-                <button 
-                  onClick={() => setShowWalletDetails(!showWalletDetails)}
-                  className="p-1 hover:bg-surface rounded transition-colors"
-                >
-                  <ChevronDown size={16} className={`transition-transform ${showWalletDetails ? 'rotate-180' : ''}`} />
+                <button onClick={() => setShowWalletDetails(!showWalletDetails)} className="p-1 hover:bg-surface rounded transition-colors">
+                  <ChevronDown size={16} className={`transition-transform ${showWalletDetails ? "rotate-180" : ""}`} />
                 </button>
               </div>
-              
+
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-success">{getWalletProvider()}</p>
                 <p className="text-xs font-mono text-foreground">{getShortAddress(activeAccount.address)}</p>
-                
+
                 {showWalletDetails && (
                   <div className="space-y-2 pt-2 border-t border-success/20">
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => {
                           if (activeAccount?.address) {
-                            navigator.clipboard.writeText(activeAccount.address)
+                            navigator.clipboard.writeText(activeAccount.address);
                           }
                         }}
                         className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -140,7 +129,7 @@ export function Sidebar({}: SidebarProps) {
                         Copy Address
                       </button>
                     </div>
-                    <Button 
+                    <Button
                       onClick={handleDisconnectWallet}
                       size="sm"
                       className="w-full bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/30"
@@ -155,7 +144,7 @@ export function Sidebar({}: SidebarProps) {
             <div className="px-4 py-3 rounded-lg bg-surface-light border border-border">
               <p className="text-xs text-muted-foreground mb-2">Wallet Status</p>
               <p className="text-sm font-semibold text-muted-foreground">Not Connected</p>
-              <Button 
+              <Button
                 onClick={() => setIsWalletModalOpen(true)}
                 className="w-full mt-3 bg-primary hover:bg-primary-dark text-primary-foreground"
               >
@@ -167,18 +156,13 @@ export function Sidebar({}: SidebarProps) {
             </div>
           )}
         </div>
-        
+
         {/* Wallet Connect Modal */}
         <WalletConnectModal isOpen={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
       </aside>
 
       {/* Mobile Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+      {isOpen && <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={() => setIsOpen(false)} />}
     </>
-  )
+  );
 }
